@@ -36,6 +36,7 @@ export default async function handler(req, res) {
           assignee: assigneeKey ? (props[assigneeKey]?.rich_text?.[0]?.plain_text || "") : "",
         };
       });
+      if (req.query.debug) return res.status(200).json(data.results || []);
       return res.status(200).json(tasks);
     }
 
