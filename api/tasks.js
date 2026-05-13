@@ -15,7 +15,6 @@ export default async function handler(req, res) {
 
   try {
     if (req.method === "GET") {
-      // Query all tasks, filter by week if provided
       const { week } = req.query;
       const body = {
         filter: week ? { property: "Tuần", rich_text: { equals: week } } : undefined,
@@ -29,12 +28,13 @@ export default async function handler(req, res) {
         id: p.id,
         content: p.properties["Nội dung"]?.title?.[0]?.plain_text || "",
         week: p.properties["Tuần"]?.rich_text?.[0]?.plain_text || "",
+        assignee: p.properties["Assignee"]?.rich_text?.[0]?.plain_text || "",
       }));
       return res.status(200).json(tasks);
     }
 
     if (req.method === "POST") {
-      const { content, week } = req.body;
+      const { content, week, assignee } = req.body;
       const r = await fetch("https://api.notion.com/v1/pages", {
         method: "POST", headers,
         body: JSON.stringify({
@@ -42,11 +42,12 @@ export default async function handler(req, res) {
           properties: {
             "Nội dung": { title: [{ text: { content } }] },
             "Tuần": { rich_text: [{ text: { content: week } }] },
+            "Assignee": { rich_text: [{ text: { content: assignee || "" } }] },
           },
         }),
       });
       const data = await r.json();
-      return res.status(200).json({ id: data.id, content, week });
+      return res.status(200).json({ id: data.id, content, week, assignee });
     }
 
     if (req.method === "DELETE") {
