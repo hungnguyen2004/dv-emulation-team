@@ -19,7 +19,7 @@ export default async function handler(req, res) {
       const { week } = req.query;
       const body = {
         filter: week ? { property: "Tuần", rich_text: { equals: week } } : undefined,
-        sorts: [{ property: "created_time", direction: "ascending" }],
+        sorts: [{ timestamp: "created_time", direction: "ascending" }],
       };
       const r = await fetch(`https://api.notion.com/v1/databases/${DB_TASKS}/query`, {
         method: "POST", headers, body: JSON.stringify(body),
