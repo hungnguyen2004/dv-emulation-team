@@ -24,12 +24,18 @@ export default async function handler(req, res) {
         method: "POST", headers, body: JSON.stringify(body),
       });
       const data = await r.json();
-      const tasks = (data.results || []).map(p => ({
-        id: p.id,
-        content: p.properties["Nội dung"]?.title?.[0]?.plain_text || "",
-        week: p.properties["Tuần"]?.rich_text?.[0]?.plain_text || "",
-        assignee: p.properties["Assignee"]?.rich_text?.[0]?.plain_text || "",
-      }));
+      const tasks = (data.results || []).map(p => {
+        const props = p.properties;
+        const titleKey = Object.keys(props).find(k => props[k].type === "title");
+        const weekKey = Object.keys(props).find(k => k === "Tuần" || k === "Tu\u1EA7n");
+        const assigneeKey = Object.keys(props).find(k => k === "Assignee");
+        return {
+          id: p.id,
+          content: titleKey ? (props[titleKey]?.title?.[0]?.plain_text || "") : "",
+          week: weekKey ? (props[weekKey]?.rich_text?.[0]?.plain_text || "") : "",
+          assignee: assigneeKey ? (props[assigneeKey]?.rich_text?.[0]?.plain_text || "") : "",
+        };
+      });
       return res.status(200).json(tasks);
     }
 
