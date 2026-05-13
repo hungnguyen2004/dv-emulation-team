@@ -332,23 +332,35 @@ function renderTasks(main) {
     ?`<div style="text-align:center;padding:32px 0;color:#243050;font-size:14px">Chưa có nhiệm vụ nào</div>`
     :tasks.map((t,i)=>`<div class="task-row">
         <span style="color:#6366f1;font-weight:700;font-size:12px;min-width:22px">${i+1}</span>
-        <span style="flex:1;font-size:14px">${t.content}</span>
+        <span style="flex:1;font-size:14px">${t.content}${t.assignee?` <span style="font-size:11px;background:rgba(99,102,241,.2);color:#818cf8;padding:2px 8px;border-radius:10px;margin-left:6px">${USERS[t.assignee]?.displayName||t.assignee}</span>`:""}</span>
         <button onclick="removeTask('${t.id}')" style="background:none;border:none;color:#334155;cursor:pointer;font-size:20px;line-height:1;padding:0 4px" onmouseover="this.style.color='#ef4444'" onmouseout="this.style.color='#334155'">×</button>
       </div>`).join("");
   main.innerHTML=`<div class="fi">
     <div style="margin-bottom:26px"><h1 style="font-family:'Syne',sans-serif;font-size:26px;font-weight:800;color:#f1f5f9">Giao nhiệm vụ</h1><p style="color:#475569;margin-top:5px;font-size:14px">Đặt nhiệm vụ tuần cho toàn nhóm</p></div>
     <div class="row"><select class="sel" onchange="changeWeek(this.value)">${wSel}</select></div>
     <div class="card"><div style="font-size:13px;font-weight:600;color:#64748b;margin-bottom:12px">Thêm nhiệm vụ cho ${weekLabel(curWeek)}</div>
-      <div style="display:flex;gap:10px"><input class="inp" id="task-inp" placeholder="Nhập nội dung nhiệm vụ..." style="flex:1" onkeydown="if(event.key==='Enter')addTask()"/><button class="btn-p" onclick="addTask()">+ Thêm</button></div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+       <input class="inp" id="task-inp" placeholder="Nhập nội dung nhiệm vụ..." style="flex:2;min-width:200px" onkeydown="if(event.key==='Enter')addTask()"/>
+       <select class="sel" id="task-assignee" style="flex:1;min-width:150px">
+         <option value="">-- Tất cả --</option>
+         <option value="duytq9">Trần Quang Duy</option>
+         <option value="ducnv71">Nguyễn Việt Đức</option>
+         <option value="hainn36">Nguyễn Ngọc Hải</option>
+         <option value="datnt554">Nguyễn Tiến Đạt</option>
+       </select>
+       <button class="btn-p" onclick="addTask()">+ Thêm</button>
+     </div>
     </div>
     <div class="card"><div style="font-size:13px;font-weight:600;color:#64748b;margin-bottom:14px">Danh sách (${tasks.length} nhiệm vụ)</div>${taskRows}</div>
   </div>`;
 }
 window.addTask=async function(){
   const inp=document.getElementById("task-inp");
+  const assigneeEl=document.getElementById("task-assignee");
   const val=inp?.value?.trim(); if(!val) return;
+  const assignee=assigneeEl?.value||"";
   inp.value="";
-  await api("/api/tasks","POST",{content:val,week:curWeek});
+  await api("/api/tasks","POST",{content:val,week:curWeek,assignee});
   await loadWeek(curWeek);
   showToast("Đã thêm nhiệm vụ");
   renderPage();
