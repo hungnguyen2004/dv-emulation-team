@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>DV-Emulation-Team</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=Syne:wght@700;800&display=swap" rel="stylesheet"/>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'DM Sans',sans-serif;background:#0f172a;color:#e2e8f0;min-height:100vh}
+  input,select,textarea,button{font-family:'DM Sans',sans-serif;outline:none}
+  ::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:#1e293b}::-webkit-scrollbar-thumb{background:#334155;border-radius:3px}
+  #app{display:flex;min-height:100vh}
+  #sidebar{width:232px;background:#080e1c;border-right:1px solid #141f30;padding:22px 12px;display:flex;flex-direction:column;position:fixed;top:0;bottom:0;z-index:10}
+  #main{margin-left:232px;flex:1;padding:36px 40px;max-width:920px}
+  .card{background:#1e293b;border:1px solid #2d3f57;border-radius:16px;padding:24px;margin-bottom:16px}
+  .btn-p{background:linear-gradient(135deg,#6366f1,#8b5cf6);color:white;border:none;padding:10px 22px;border-radius:10px;cursor:pointer;font-weight:600;font-size:14px;transition:all .2s}
+  .btn-p:hover{transform:translateY(-1px);box-shadow:0 4px 18px rgba(99,102,241,.4)}
+  .btn-p:disabled{background:#334155;color:#64748b;cursor:not-allowed;transform:none;box-shadow:none}
+  .btn-g{background:transparent;color:#94a3b8;border:1px solid #334155;padding:7px 15px;border-radius:8px;cursor:pointer;font-size:13px;transition:all .2s}
+  .btn-g:hover{background:#334155;color:#e2e8f0}
+  .inp{background:#0f172a;border:1px solid #334155;color:#e2e8f0;padding:10px 14px;border-radius:10px;font-size:14px;width:100%;transition:border .2s}
+  .inp:focus{border-color:#6366f1}
+  .ta{background:#0f172a;border:1px solid #334155;color:#e2e8f0;padding:12px 14px;border-radius:10px;font-size:14px;resize:vertical;min-height:90px;width:100%;line-height:1.6}
+  .ta:focus{border-color:#6366f1}
+  .sel{background:#0f172a;border:1px solid #334155;color:#e2e8f0;padding:8px 14px;border-radius:10px;font-size:13px;cursor:pointer}
+  .label{display:flex;gap:6px;align-items:center;font-size:13px;font-weight:600;color:#94a3b8;margin-bottom:7px}
+  .form-group{margin-bottom:16px}
+  .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:16px}
+  .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:22px}
+  .nav-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;cursor:pointer;transition:all .2s;font-size:14px;font-weight:500;color:#3d5068;border-left:3px solid transparent;margin-bottom:2px}
+  .nav-item:hover{color:#818cf8;background:rgba(99,102,241,.08)}
+  .nav-item.active{background:rgba(99,102,241,.14);color:#818cf8;border-left-color:#6366f1}
+  .chip{padding:7px 15px;border-radius:20px;font-size:13px;cursor:pointer;border:1px solid #334155;background:transparent;color:#475569;transition:all .2s;font-weight:500}
+  .chip.active{background:linear-gradient(135deg,#6366f1,#8b5cf6);color:white;border-color:transparent}
+  .tag{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:6px;font-size:12px;font-weight:600}
+  .stat-card{background:#1e293b;border:1px solid #2d3f57;border-radius:16px;padding:20px;display:flex;align-items:center;gap:14px}
+  .member-row{display:flex;align-items:center;justify-content:space-between;padding:11px 14px;background:#0f172a;border-radius:10px;border:1px solid #1e293b;margin-bottom:9px}
+  .task-row{display:flex;align-items:center;gap:12px;padding:11px 14px;background:#0f172a;border-radius:9px;border:1px solid #1e293b;margin-bottom:8px}
+  .report-field{margin-bottom:18px}
+  .report-field-label{display:flex;gap:6px;align-items:center;font-size:12px;font-weight:700;color:#475569;margin-bottom:8px;text-transform:uppercase;letter-spacing:.05em}
+  .report-field-val{background:#0f172a;border-radius:10px;padding:12px 14px;font-size:14px;line-height:1.7;color:#cbd5e1;white-space:pre-wrap}
+  #login-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;background:#070d1a}
+  .login-box{width:420px;padding:48px 44px;background:rgba(15,23,42,.97);border:1px solid rgba(99,102,241,.18);border-radius:24px}
+  .login-label{display:block;font-size:11px;font-weight:700;color:#4b5563;margin-bottom:8px;letter-spacing:.08em;text-transform:uppercase}
+  .login-inp{width:100%;padding:12px 16px;background:#0a1020;border:1px solid #1e2d45;border-radius:12px;color:#f1f5f9;font-size:15px;font-family:inherit;margin-bottom:16px}
+  .login-inp:focus{border-color:rgba(99,102,241,.6)}
+  .login-btn{width:100%;padding:14px;background:linear-gradient(135deg,#6366f1,#8b5cf6);border:none;border-radius:12px;color:white;font-size:15px;font-weight:600;cursor:pointer;font-family:inherit}
+  .login-btn:disabled{background:#1e293b;color:#475569;cursor:not-allowed}
+  #toast{position:fixed;bottom:26px;right:26px;padding:12px 20px;border-radius:10px;font-weight:600;font-size:14px;z-index:999;box-shadow:0 4px 20px rgba(0,0,0,.35);display:none;color:white}
+  #splash{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#070d1a;color:#475569}
+  @keyframes fi{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}} .fi{animation:fi .3s ease}
+  @keyframes spin{to{transform:rotate(360deg)}} .spin{display:inline-block;animation:spin 1s linear infinite}
+</style>
+</head>
+<body>
+
+<div id="splash">
+  <div style="font-family:'Syne',sans-serif;font-size:22px;font-weight:800;color:#818cf8;margin-bottom:14px">DV-Emulation-Team</div>
+  <div class="spin" style="font-size:20px">⟳</div>
+  <div style="margin-top:10px;font-size:14px">Đang khởi động...</div>
+</div>
+
+<div id="login-wrap" style="display:none">
+  <div style="position:fixed;inset:0;pointer-events:none">
+    <div style="position:absolute;top:25%;left:20%;width:500px;height:500px;background:radial-gradient(circle,rgba(99,102,241,.1) 0%,transparent 65%);border-radius:50%"></div>
+  </div>
+  <div class="login-box">
+    <div style="text-align:center;margin-bottom:36px">
+      <div style="display:inline-flex;width:54px;height:54px;background:linear-gradient(135deg,#6366f1,#8b5cf6);border-radius:16px;align-items:center;justify-content:center;font-size:24px;margin-bottom:14px;box-shadow:0 8px 32px rgba(99,102,241,.3)">⬡</div>
+      <h1 style="font-family:'Syne',sans-serif;font-size:26px;font-weight:800;color:#f1f5f9">DV-Emulation-Team</h1>
+      <p style="color:#475569;font-size:14px;margin-top:6px">Hệ thống quản lý báo cáo nhóm</p>
+    </div>
+    <label class="login-label">Tên đăng nhập</label>
+    <input id="login-user" class="login-inp" placeholder="Nhập username..."/>
+    <label class="login-label">Mật khẩu</label>
+    <div style="position:relative;margin-bottom:16px">
+      <input id="login-pass" class="login-inp" type="password" placeholder="Nhập mật khẩu..." style="margin-bottom:0;padding-right:44px"/>
+      <button onclick="togglePw()" style="position:absolute;right:14px;top:50%;transform:translateY(-50%);background:none;border:none;color:#475569;cursor:pointer;font-size:15px" id="pw-eye">👁️</button>
+    </div>
+    <div id="login-err" style="display:none;background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.25);border-radius:10px;padding:10px 14px;font-size:13px;color:#f87171;margin-bottom:12px">⚠ Tên đăng nhập hoặc mật khẩu không đúng</div>
+    <button class="login-btn" id="login-btn" onclick="doLogin()">Đăng nhập →</button>
+  </div>
+</div>
+
+<div id="app-wrap" style="display:none">
+  <div id="app">
+    <div id="sidebar">
+      <div style="padding:4px 10px 22px">
+        <div style="font-family:'Syne',sans-serif;font-size:16px;font-weight:800;color:#818cf8;letter-spacing:-.3px">DV-Emulation-Team</div>
+        <div id="role-label" style="font-size:10px;color:#243050;margin-top:2px;text-transform:uppercase;letter-spacing:.1em"></div>
+      </div>
+      <div id="nav-items"></div>
+      <div style="margin-top:auto">
+        <div id="progress-box" style="display:none;background:rgba(99,102,241,.07);border:1px solid rgba(99,102,241,.14);border-radius:12px;padding:12px 14px;margin-bottom:10px">
+          <div style="font-size:11px;color:#334155;margin-bottom:4px">Tiến độ tuần này</div>
+          <div id="progress-val" style="font-size:24px;font-weight:700;color:#818cf8">0/4</div>
+          <div style="background:#1a2840;border-radius:3px;height:3px;margin-top:8px">
+            <div id="progress-bar" style="background:linear-gradient(90deg,#6366f1,#8b5cf6);border-radius:3px;height:3px;width:0%;transition:width .5s"></div>
+          </div>
+        </div>
+        <div style="padding:12px;background:#0d1525;border-radius:12px;border:1px solid #1a2840">
+          <div style="display:flex;align-items:center;gap:9px;margin-bottom:10px">
+            <div id="user-avatar" style="width:34px;height:34px;min-width:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:white"></div>
+            <div>
+              <div id="user-name" style="font-size:13px;font-weight:600;color:#e2e8f0;line-height:1.2"></div>
+              <div id="user-username" style="font-size:11px;color:#334155"></div>
+            </div>
+          </div>
+          <button onclick="doLogout()" style="width:100%;padding:7px;background:rgba(239,68,68,.07);border:1px solid rgba(239,68,68,.18);border-radius:8px;color:#f87171;font-size:12px;cursor:pointer;font-weight:500">Đăng xuất</button>
+        </div>
+      </div>
+    </div>
+    <div id="main"></div>
+  </div>
+</div>
+<div id="toast"></div>
+
+<script>
+// ── CONFIG ──────────────────────────────────────────────
+const USERS = {
+  hungnc5:  { password:"8213546Ab",     role:"manager", displayName:"Nguyễn Cảnh Hưng" },
+  duytq9:   { password:"tranquangduy",  role:"member",  displayName:"Trần Quang Duy" },
+  ducnv71:  { password:"nguyenvietduc", role:"member",  displayName:"Nguyễn Việt Đức" },
+  hainn36:  { password:"nguyenngochai", role:"member",  displayName:"Nguyễn Ngọc Hải" },
+  datnt554: { password:"nguyentiendat", role:"member",  displayName:"Nguyễn Tiến Đạt" },
+};
+const MEMBERS = ["duytq9","ducnv71","hainn36","datnt554"];
+const AV_COLORS = ["#6366f1","#8b5cf6","#ec4899","#f59e0b","#10b981","#06b6d4"];
+const STATUS_MAP = {
+  "Hoàn thành":     {bg:"rgba(16,185,129,.15)", color:"#34d399", dot:"#10b981"},
+  "Đang thực hiện": {bg:"rgba(59,130,246,.15)",  color:"#60a5fa", dot:"#3b82f6"},
+  "Chậm tiến độ":   {bg:"rgba(239,68,68,.15)",   color:"#f87171", dot:"#ef4444"},
+  "Chưa nộp":       {bg:"rgba(100,116,139,.12)", color:"#94a3b8", dot:"#64748b"},
+};
+const QUARTER_OPTIONS = ["2025-Q1","2025-Q2","2025-Q3","2025-Q4","2026-Q1","2026-Q2"];
+
+// ── ISO WEEK ─────────────────────────────────────────────
+function getISOWeek(date) {
+  const d = new Date(date);
+  d.setHours(0,0,0,0);
+  d.setDate(d.getDate() + 4 - (d.getDay()||7));
+  const yearStart = new Date(d.getFullYear(), 0, 1);
+  const wk = Math.ceil(((d - yearStart) / 86400000 + 1) / 7);
+  return `${d.getFullYear()}-W${String(wk).padStart(2,"0")}`;
+}
+function getWeekId(offset=0) {
+  const d = new Date();
+  d.setDate(d.getDate() - offset * 7);
+  return getISOWeek(d);
+}
+function getCurQ() { const n=new Date(); return `${n.getFullYear()}-Q${Math.ceil((n.getMonth()+1)/3)}`; }
+function weekLabel(w) { const[y,wk]=w.split("-W"); return `Tuần ${parseInt(wk)} / ${y}`; }
+function qLabel(q) { const[y,qt]=q.split("-Q"); return `Quý ${qt} năm ${y}`; }
+function weekOptions() { return Array.from({length:8},(_,i)=>getWeekId(i)); }
+
+// ── STATE ────────────────────────────────────────────────
+let session = null;
+let cache = { tasks:{}, weekly:{}, quarterly:{} };
+let curPage="", curWeek=getWeekId(0), curQ=getCurQ(), curMember=MEMBERS[0];
+
+// ── API CALLS ─────────────────────────────────────────────
+async function api(path, method="GET", body=null) {
+  const opts = { method, headers:{"Content-Type":"application/json"} };
+  if (body) opts.body = JSON.stringify(body);
+  const r = await fetch(path, opts);
+  return r.json();
+}
+
+async function loadWeek(week) {
+  const [tasks, reports] = await Promise.all([
+    api(`/api/tasks?week=${week}`),
+    api(`/api/weekly?week=${week}`),
+  ]);
+  cache.tasks[week] = Array.isArray(tasks) ? tasks : [];
+  cache.weekly[week] = reports || {};
+}
+
+async function loadQuarter(quarter) {
+  const reports = await api(`/api/quarterly?quarter=${quarter}`);
+  cache.quarterly[quarter] = reports || {};
+}
+
+// ── HELPERS ──────────────────────────────────────────────
+function avatar(name, uid, size=36) {
+  const idx = MEMBERS.indexOf(uid)>=0 ? MEMBERS.indexOf(uid) : MEMBERS.length;
+  const c1=AV_COLORS[idx%AV_COLORS.length], c2=AV_COLORS[(idx+1)%AV_COLORS.length];
+  const init = name.split(" ").slice(-2).map(w=>w[0]).join("").toUpperCase();
+  return `<div style="width:${size}px;height:${size}px;min-width:${size}px;border-radius:50%;background:linear-gradient(135deg,${c1},${c2});display:flex;align-items:center;justify-content:center;font-size:${size*.36}px;font-weight:700;color:white">${init}</div>`;
+}
+function statusTag(st) {
+  const sc = STATUS_MAP[st]||STATUS_MAP["Chưa nộp"];
+  return `<span class="tag" style="background:${sc.bg};color:${sc.color}"><span style="width:6px;height:6px;border-radius:50%;background:${sc.dot};display:inline-block"></span>${st}</span>`;
+}
+function showToast(msg, ok=true) {
+  const el=document.getElementById("toast");
+  el.textContent = (ok?"✓ ":"✗ ")+msg;
+  el.style.background = ok?"linear-gradient(135deg,#10b981,#059669)":"linear-gradient(135deg,#ef4444,#dc2626)";
+  el.style.display="block";
+  setTimeout(()=>el.style.display="none", 2500);
+}
+function loading(msg="Đang tải...") {
+  document.getElementById("main").innerHTML=`<div style="display:flex;align-items:center;gap:12px;padding:40px;color:#475569"><span class="spin" style="font-size:20px">⟳</span>${msg}</div>`;
+}
+
+// ── AUTH ─────────────────────────────────────────────────
+window.togglePw = ()=>{
+  const el=document.getElementById("login-pass");
+  el.type=el.type==="password"?"text":"password";
+  document.getElementById("pw-eye").textContent=el.type==="password"?"👁️":"🙈";
+};
+window.doLogin = ()=>{
+  const u=document.getElementById("login-user").value.trim().toLowerCase();
+  const p=document.getElementById("login-pass").value;
+  const user=USERS[u];
+  if(!user||user.password!==p){ document.getElementById("login-err").style.display="block"; return; }
+  document.getElementById("login-err").style.display="none";
+  const btn=document.getElementById("login-btn"); btn.disabled=true; btn.textContent="Đang đăng nhập...";
+  session={username:u, role:user.role, displayName:user.displayName};
+  sessionStorage.setItem("dv_session", JSON.stringify(session));
+  showApp();
+};
+document.addEventListener("keydown", e=>{ if(e.key==="Enter"&&document.getElementById("login-wrap").style.display!=="none") window.doLogin(); });
+window.doLogout = ()=>{
+  sessionStorage.removeItem("dv_session"); session=null;
+  document.getElementById("app-wrap").style.display="none";
+  document.getElementById("login-wrap").style.display="flex";
+  const btn=document.getElementById("login-btn"); btn.disabled=false; btn.textContent="Đăng nhập →";
+  document.getElementById("login-user").value="";
+  document.getElementById("login-pass").value="";
+};
+
+// ── SHOW APP ─────────────────────────────────────────────
+async function showApp() {
+  document.getElementById("login-wrap").style.display="none";
+  document.getElementById("app-wrap").style.display="block";
+  document.getElementById("role-label").textContent=session.role==="manager"?"● Quản lý":"● Thành viên";
+  document.getElementById("user-name").textContent=session.displayName;
+  document.getElementById("user-username").textContent="@"+session.username;
+  const idx=MEMBERS.indexOf(session.username)>=0?MEMBERS.indexOf(session.username):MEMBERS.length;
+  const av=document.getElementById("user-avatar");
+  av.style.background=`linear-gradient(135deg,${AV_COLORS[idx%AV_COLORS.length]},${AV_COLORS[(idx+1)%AV_COLORS.length]})`;
+  av.textContent=session.displayName.split(" ").slice(-2).map(w=>w[0]).join("").toUpperCase();
+
+  const navs = session.role==="manager"
+    ? [{id:"dashboard",icon:"▦",label:"Tổng quan"},{id:"tasks",icon:"◉",label:"Giao nhiệm vụ"},{id:"weekly-view",icon:"◷",label:"Báo cáo tuần"},{id:"quarterly-view",icon:"◎",label:"Báo cáo quý"}]
+    : [{id:"weekly",icon:"◷",label:"Báo cáo tuần"},{id:"quarterly",icon:"◎",label:"Báo cáo quý"}];
+  document.getElementById("nav-items").innerHTML=navs.map(n=>
+    `<div class="nav-item" id="nav-${n.id}" onclick="goPage('${n.id}')"><span>${n.icon}</span>${n.label}</div>`
+  ).join("");
+
+  if(session.role==="manager") document.getElementById("progress-box").style.display="block";
+  goPage(session.role==="manager"?"dashboard":"weekly");
+}
+
+window.goPage = async function(page) {
+  curPage=page;
+  document.querySelectorAll(".nav-item").forEach(el=>el.classList.remove("active"));
+  const navEl=document.getElementById("nav-"+page);
+  if(navEl) navEl.classList.add("active");
+  loading();
+  if(page==="dashboard"||page==="tasks"||page==="weekly-view"||page==="weekly") {
+    await loadWeek(curWeek);
+  }
+  if(page==="quarterly-view"||page==="quarterly") {
+    await loadQuarter(curQ);
+  }
+  renderPage();
+};
+
+// ── RENDER ───────────────────────────────────────────────
+function renderPage() {
+  const main=document.getElementById("main");
+  if(curPage==="dashboard")       renderDashboard(main);
+  else if(curPage==="tasks")      renderTasks(main);
+  else if(curPage==="weekly-view") renderWeeklyView(main);
+  else if(curPage==="quarterly-view") renderQView(main);
+  else if(curPage==="weekly")     renderWeeklyForm(main);
+  else if(curPage==="quarterly")  renderQForm(main);
+  updateProgress();
+}
+
+function updateProgress() {
+  if(session?.role!=="manager") return;
+  const done=MEMBERS.filter(m=>{ const r=cache.weekly?.[curWeek]?.[m]; return r&&r.completion&&r.completion.trim()!==""; }).length;
+  document.getElementById("progress-val").textContent=`${done}/${MEMBERS.length}`;
+  document.getElementById("progress-bar").style.width=`${(done/MEMBERS.length)*100}%`;
+}
+
+// ── DASHBOARD ────────────────────────────────────────────
+function renderDashboard(main) {
+  const tasks=cache.tasks?.[curWeek]||[];
+  const done=MEMBERS.filter(m=>{ const r=cache.weekly?.[curWeek]?.[m]; return r&&r.completion&&r.completion.trim()!==""; }).length;
+  const wSel=weekOptions().map(w=>`<option value="${w}"${w===curWeek?"selected":""}>${weekLabel(w)}</option>`).join("");
+  const rows=MEMBERS.map(uid=>{
+    const r=cache.weekly?.[curWeek]?.[uid];
+    const hasReport=r&&r.completion&&r.completion.trim()!=="";
+    const st=hasReport?(r.status||"Hoàn thành"):"Chưa nộp";
+    return `<div class="member-row">
+      <div style="display:flex;align-items:center;gap:11px">${avatar(USERS[uid].displayName,uid)}
+        <div><div style="font-weight:500;font-size:14px">${USERS[uid].displayName}</div><div style="font-size:11px;color:#334155">@${uid}</div></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px">${statusTag(st)}
+        <button class="btn-g" style="font-size:12px" onclick="viewMember('${uid}')">Xem →</button>
+      </div>
+    </div>`;
+  }).join("");
+  main.innerHTML=`<div class="fi">
+    <div style="margin-bottom:26px"><h1 style="font-family:'Syne',sans-serif;font-size:26px;font-weight:800;color:#f1f5f9">Tổng quan</h1><p style="color:#475569;margin-top:5px;font-size:14px">Theo dõi tiến độ toàn nhóm</p></div>
+    <div class="grid3">
+      <div class="stat-card"><div style="font-size:28px">👥</div><div><div style="font-size:26px;font-weight:700;color:#818cf8">${MEMBERS.length}</div><div style="font-size:12px;color:#334155;margin-top:2px">Thành viên</div></div></div>
+      <div class="stat-card"><div style="font-size:28px">📋</div><div><div style="font-size:26px;font-weight:700;color:#34d399">${done}/${MEMBERS.length}</div><div style="font-size:12px;color:#334155;margin-top:2px">Đã nộp báo cáo tuần</div></div></div>
+      <div class="stat-card"><div style="font-size:28px">✅</div><div><div style="font-size:26px;font-weight:700;color:#fbbf24">${tasks.length}</div><div style="font-size:12px;color:#334155;margin-top:2px">Nhiệm vụ đang giao</div></div></div>
+    </div>
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+        <h3 style="font-size:15px;font-weight:600;color:#f1f5f9">Trạng thái báo cáo</h3>
+        <select class="sel" onchange="changeWeek(this.value)">${wSel}</select>
+      </div>${rows}
+    </div>
+  </div>`;
+}
+window.viewMember=function(uid){ curMember=uid; goPage("weekly-view"); };
+window.changeWeek=async function(w){ curWeek=w; loading(); await loadWeek(w); renderPage(); };
+window.changeQuarter=async function(q){ curQ=q; loading(); await loadQuarter(q); renderPage(); };
+
+// ── TASKS ────────────────────────────────────────────────
+function renderTasks(main) {
+  const tasks=cache.tasks?.[curWeek]||[];
+  const wSel=weekOptions().map(w=>`<option value="${w}"${w===curWeek?"selected":""}>${weekLabel(w)}</option>`).join("");
+  const taskRows=tasks.length===0
+    ?`<div style="text-align:center;padding:32px 0;color:#243050;font-size:14px">Chưa có nhiệm vụ nào</div>`
+    :tasks.map((t,i)=>`<div class="task-row">
+        <span style="color:#6366f1;font-weight:700;font-size:12px;min-width:22px">${i+1}</span>
+        <span style="flex:1;font-size:14px">${t.content}</span>
+        <button onclick="removeTask('${t.id}')" style="background:none;border:none;color:#334155;cursor:pointer;font-size:20px;line-height:1;padding:0 4px" onmouseover="this.style.color='#ef4444'" onmouseout="this.style.color='#334155'">×</button>
+      </div>`).join("");
+  main.innerHTML=`<div class="fi">
+    <div style="margin-bottom:26px"><h1 style="font-family:'Syne',sans-serif;font-size:26px;font-weight:800;color:#f1f5f9">Giao nhiệm vụ</h1><p style="color:#475569;margin-top:5px;font-size:14px">Đặt nhiệm vụ tuần cho toàn nhóm</p></div>
+    <div class="row"><select class="sel" onchange="changeWeek(this.value)">${wSel}</select></div>
+    <div class="card"><div style="font-size:13px;font-weight:600;color:#64748b;margin-bottom:12px">Thêm nhiệm vụ cho ${weekLabel(curWeek)}</div>
+      <div style="display:flex;gap:10px"><input class="inp" id="task-inp" placeholder="Nhập nội dung nhiệm vụ..." style="flex:1" onkeydown="if(event.key==='Enter')addTask()"/><button class="btn-p" onclick="addTask()">+ Thêm</button></div>
+    </div>
+    <div class="card"><div style="font-size:13px;font-weight:600;color:#64748b;margin-bottom:14px">Danh sách (${tasks.length} nhiệm vụ)</div>${taskRows}</div>
+  </div>`;
+}
+window.addTask=async function(){
+  const inp=document.getElementById("task-inp");
+  const val=inp?.value?.trim(); if(!val) return;
+  inp.value="";
+  await api("/api/tasks","POST",{content:val,week:curWeek});
+  await loadWeek(curWeek);
+  showToast("Đã thêm nhiệm vụ");
+  renderPage();
+};
+window.removeTask=async function(id){
+  await api(`/api/tasks?id=${id}`,"DELETE");
+  await loadWeek(curWeek);
+  showToast("Đã xóa nhiệm vụ");
+  renderPage();
+};
+
+// ── WEEKLY VIEW ──────────────────────────────────────────
+function renderWeeklyView(main) {
+  const wSel=weekOptions().map(w=>`<option value="${w}"${w===curWeek?"selected":""}>${weekLabel(w)}</option>`).join("");
+  const chips=MEMBERS.map(uid=>`<button class="chip${uid===curMember?" active":""}" onclick="switchMember('${uid}')">${USERS[uid].displayName}</button>`).join("");
+  const tasks=cache.tasks?.[curWeek]||[];
+  const taskHtml=tasks.length===0?`<p style="color:#243050;font-size:13px">Chưa có nhiệm vụ nào</p>`
+    :tasks.map((t,i)=>`<div style="display:flex;gap:10px;margin-bottom:7px"><span style="color:#6366f1;font-weight:700;font-size:13px;min-width:20px">${i+1}.</span><span style="font-size:14px">${t.content}</span></div>`).join("");
+  const r=cache.weekly?.[curWeek]?.[curMember];
+  const u=USERS[curMember];
+  const hasReport=r&&r.completion&&r.completion.trim()!=="";
+  let reportHtml=!hasReport
+    ?`<div class="card" style="text-align:center;padding:48px 24px"><div style="font-size:38px;margin-bottom:12px">📭</div><div style="color:#334155;font-size:14px">${u.displayName} chưa nộp báo cáo tuần này</div></div>`
+    :`<div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;padding-bottom:16px;border-bottom:1px solid #1e293b">
+        <div style="display:flex;align-items:center;gap:10px">${avatar(u.displayName,curMember)}<div><div style="font-weight:600;font-size:15px">${u.displayName}</div><div style="font-size:12px;color:#334155">${weekLabel(curWeek)}</div></div></div>
+        ${statusTag(r.status||"Hoàn thành")}
+      </div>
+      ${r.completion?`<div class="report-field"><div class="report-field-label"><span>✅</span>Kết quả hoàn thành</div><div class="report-field-val">${r.completion}</div></div>`:""}
+      ${r.reason?`<div class="report-field"><div class="report-field-label"><span>⚠️</span>Lý do chậm tiến độ</div><div class="report-field-val">${r.reason}</div></div>`:""}
+      ${r.plan?`<div class="report-field"><div class="report-field-label"><span>📅</span>Kế hoạch tuần sau</div><div class="report-field-val">${r.plan}</div></div>`:""}
+    </div>`;
+  main.innerHTML=`<div class="fi">
+    <div style="margin-bottom:26px"><h1 style="font-family:'Syne',sans-serif;font-size:26px;font-weight:800;color:#f1f5f9">Báo cáo tuần</h1><p style="color:#475569;margin-top:5px;font-size:14px">Xem báo cáo của từng thành viên</p></div>
+    <div class="row"><select class="sel" onchange="changeWeek(this.value)">${wSel}</select>${chips}</div>
+    <div class="card"><div style="font-size:11px;font-weight:700;color:#6366f1;text-transform:uppercase;letter-spacing:.08em;margin-bottom:12px">📌 Nhiệm vụ tuần (quản lý giao)</div>${taskHtml}</div>
+    ${reportHtml}
+  </div>`;
+}
+window.switchMember=function(uid){ curMember=uid; renderPage(); };
+
+// ── QUARTERLY VIEW ───────────────────────────────────────
+function renderQView(main) {
+  const qSel=QUARTER_OPTIONS.map(q=>`<option value="${q}"${q===curQ?"selected":""}>${qLabel(q)}</option>`).join("");
+  const chips=MEMBERS.map(uid=>`<button class="chip${uid===curMember?" active":""}" onclick="switchMember('${uid}')">${USERS[uid].displayName}</button>`).join("");
+  const r=cache.quarterly?.[curQ]?.[curMember];
+  const u=USERS[curMember];
+  const reportHtml=!r?.achievements
+    ?`<div class="card" style="text-align:center;padding:48px 24px"><div style="font-size:38px;margin-bottom:12px">📭</div><div style="color:#334155;font-size:14px">${u.displayName} chưa nộp báo cáo quý này</div></div>`
+    :`<div class="card">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px;padding-bottom:16px;border-bottom:1px solid #1e293b">${avatar(u.displayName,curMember)}<div><div style="font-weight:600;font-size:15px">${u.displayName}</div><div style="font-size:12px;color:#334155">${qLabel(curQ)}</div></div></div>
+      ${r.achievements?`<div class="report-field"><div class="report-field-label"><span>🏆</span>Thành tích</div><div class="report-field-val">${r.achievements}</div></div>`:""}
+      ${r.kpi?`<div class="report-field"><div class="report-field-label"><span>📊</span>KPI</div><div class="report-field-val">${r.kpi}</div></div>`:""}
+      ${r.issues?`<div class="report-field"><div class="report-field-label"><span>🔍</span>Khó khăn</div><div class="report-field-val">${r.issues}</div></div>`:""}
+      ${r.plan?`<div class="report-field"><div class="report-field-label"><span>🎯</span>Kế hoạch</div><div class="report-field-val">${r.plan}</div></div>`:""}
+    </div>`;
+  main.innerHTML=`<div class="fi">
+    <div style="margin-bottom:26px"><h1 style="font-family:'Syne',sans-serif;font-size:26px;font-weight:800;color:#f1f5f9">Báo cáo quý</h1><p style="color:#475569;margin-top:5px;font-size:14px">Xem báo cáo quý của từng thành viên</p></div>
+    <div class="row"><select class="sel" onchange="changeQuarter(this.value)">${qSel}</select>${chips}</div>
+    ${reportHtml}
+  </div>`;
+}
+
+// ── WEEKLY FORM ──────────────────────────────────────────
+function renderWeeklyForm(main) {
+  const uid=session.username;
+  const wSel=weekOptions().map(w=>`<option value="${w}"${w===curWeek?"selected":""}>${weekLabel(w)}</option>`).join("");
+  const tasks=cache.tasks?.[curWeek]||[];
+  const taskHtml=tasks.length===0?`<p style="color:#243050;font-size:13px">Chưa có nhiệm vụ nào được giao</p>`
+    :tasks.map((t,i)=>`<div style="display:flex;gap:10px;margin-bottom:7px"><span style="color:#6366f1;font-weight:700;font-size:13px;min-width:20px">${i+1}.</span><span style="font-size:14px">${t.content}</span></div>`).join("");
+  const r=cache.weekly?.[curWeek]?.[uid]||{};
+  const sOpts=["Hoàn thành","Đang thực hiện","Chậm tiến độ"].map(s=>`<option value="${s}"${(r.status||"Hoàn thành")===s?"selected":""}>${s}</option>`).join("");
+  main.innerHTML=`<div class="fi">
+    <div style="margin-bottom:26px"><h1 style="font-family:'Syne',sans-serif;font-size:26px;font-weight:800;color:#f1f5f9">Báo cáo tuần</h1><p style="color:#475569;margin-top:5px;font-size:14px">Xin chào, ${session.displayName}!</p></div>
+    <div class="row"><select class="sel" onchange="changeWeek(this.value)">${wSel}</select></div>
+    <div class="card"><div style="font-size:11px;font-weight:700;color:#6366f1;text-transform:uppercase;letter-spacing:.08em;margin-bottom:12px">📌 Nhiệm vụ tuần (quản lý giao)</div>${taskHtml}</div>
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+        <h3 style="font-size:15px;font-weight:600;color:#f1f5f9">Điền báo cáo của bạn</h3>
+        <div style="display:flex;align-items:center;gap:8px"><span style="font-size:12px;color:#64748b">Trạng thái:</span><select class="sel" id="wstatus">${sOpts}</select></div>
+      </div>
+      <div class="form-group"><div class="label"><span>✅</span>Kết quả hoàn thành</div><textarea class="ta" id="w-completion" placeholder="Mô tả những công việc đã hoàn thành...">${r.completion||""}</textarea></div>
+      <div class="form-group"><div class="label"><span>⚠️</span>Lý do chậm tiến độ (nếu có)</div><textarea class="ta" id="w-reason" placeholder="Nêu nguyên nhân nếu có hạng mục chưa đạt tiến độ...">${r.reason||""}</textarea></div>
+      <div class="form-group"><div class="label"><span>📅</span>Đề xuất kế hoạch tuần sau</div><textarea class="ta" id="w-plan" placeholder="Liệt kê những việc dự kiến tuần tới...">${r.plan||""}</textarea></div>
+      <div style="text-align:right"><button class="btn-p" id="save-weekly-btn" onclick="saveWeekly()">Lưu báo cáo</button></div>
+    </div>
+  </div>`;
+}
+window.saveWeekly=async function(){
+  const btn=document.getElementById("save-weekly-btn");
+  btn.disabled=true; btn.textContent="Đang lưu...";
+  await api("/api/weekly","POST",{
+    week:curWeek, username:session.username,
+    completion:document.getElementById("w-completion").value,
+    reason:document.getElementById("w-reason").value,
+    plan:document.getElementById("w-plan").value,
+    status:document.getElementById("wstatus").value,
+  });
+  await loadWeek(curWeek);
+  showToast("Đã lưu báo cáo tuần");
+  btn.disabled=false; btn.textContent="Lưu báo cáo";
+};
+
+// ── QUARTERLY FORM ───────────────────────────────────────
+function renderQForm(main) {
+  const uid=session.username;
+  const qSel=QUARTER_OPTIONS.map(q=>`<option value="${q}"${q===curQ?"selected":""}>${qLabel(q)}</option>`).join("");
+  const r=cache.quarterly?.[curQ]?.[uid]||{};
+  main.innerHTML=`<div class="fi">
+    <div style="margin-bottom:26px"><h1 style="font-family:'Syne',sans-serif;font-size:26px;font-weight:800;color:#f1f5f9">Báo cáo quý</h1><p style="color:#475569;margin-top:5px;font-size:14px">Xin chào, ${session.displayName}!</p></div>
+    <div class="row"><select class="sel" onchange="changeQuarter(this.value)">${qSel}</select></div>
+    <div class="card">
+      <h3 style="font-size:15px;font-weight:600;color:#f1f5f9;margin-bottom:20px">Điền báo cáo quý của bạn</h3>
+      <div class="form-group"><div class="label"><span>🏆</span>Thành tích đạt được trong quý</div><textarea class="ta" id="q-achievements" style="min-height:100px" placeholder="Liệt kê kết quả đã hoàn thành...">${r.achievements||""}</textarea></div>
+      <div class="form-group"><div class="label"><span>📊</span>Đánh giá KPI</div><textarea class="ta" id="q-kpi" style="min-height:100px" placeholder="Chỉ số hiệu suất so với mục tiêu...">${r.kpi||""}</textarea></div>
+      <div class="form-group"><div class="label"><span>🔍</span>Khó khăn & tồn đọng</div><textarea class="ta" id="q-issues" style="min-height:100px" placeholder="Những vấn đề gặp phải...">${r.issues||""}</textarea></div>
+      <div class="form-group"><div class="label"><span>🎯</span>Kế hoạch quý tới</div><textarea class="ta" id="q-plan" style="min-height:100px" placeholder="Mục tiêu và kế hoạch hành động...">${r.plan||""}</textarea></div>
+      <div style="text-align:right"><button class="btn-p" id="save-q-btn" onclick="saveQuarterly()">Lưu báo cáo quý</button></div>
+    </div>
+  </div>`;
+}
+window.saveQuarterly=async function(){
+  const btn=document.getElementById("save-q-btn");
+  btn.disabled=true; btn.textContent="Đang lưu...";
+  await api("/api/quarterly","POST",{
+    quarter:curQ, username:session.username,
+    achievements:document.getElementById("q-achievements").value,
+    kpi:document.getElementById("q-kpi").value,
+    issues:document.getElementById("q-issues").value,
+    plan:document.getElementById("q-plan").value,
+  });
+  await loadQuarter(curQ);
+  showToast("Đã lưu báo cáo quý");
+  btn.disabled=false; btn.textContent="Lưu báo cáo quý";
+};
+
+// ── BOOT ─────────────────────────────────────────────────
+(function(){
+  document.getElementById("splash").style.display="none";
+  const saved=sessionStorage.getItem("dv_session");
+  if(saved){ try{ session=JSON.parse(saved); showApp(); return; } catch{} }
+  document.getElementById("login-wrap").style.display="flex";
+})();
+</script>
+</body>
+</html>

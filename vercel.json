@@ -1,0 +1,8 @@
+{
+  "rewrites": [
+    { "source": "/api/tasks", "destination": "/api/tasks.js" },
+    { "source": "/api/weekly", "destination": "/api/weekly.js" },
+    { "source": "/api/quarterly", "destination": "/api/quarterly.js" },
+    { "source": "/(.*)", "destination": "/index.html" }
+  ]
+}
