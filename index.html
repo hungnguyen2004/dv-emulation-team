@@ -445,7 +445,7 @@ window.saveWeekly=async function(){
   await api("/api/weekly","POST",{
     week:curWeek, username:session.username,
     completion:document.getElementById("w-completion").value,
-    reason:document.getElementById("w-reason").value,
+    reason:"",
     plan:document.getElementById("w-plan").value,
     status:document.getElementById("wstatus").value,
   });
