@@ -1,9 +1,9 @@
 const NOTION_TOKEN = process.env.NOTION_TOKEN;
-const DB_WEEKLY = process.env.DB_WEEKLY;
+const DB_TASKS = process.env.DB_TASKS;
 
 export default async function handler(req, res) {
   res.setHeader("Access-Control-Allow-Origin", "*");
-  res.setHeader("Access-Control-Allow-Methods", "GET,POST,PATCH,OPTIONS");
+  res.setHeader("Access-Control-Allow-Methods", "GET,POST,OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type");
   if (req.method === "OPTIONS") return res.status(200).end();
 
@@ -19,40 +19,41 @@ export default async function handler(req, res) {
   try {
     if (req.method === "GET") {
       const { week } = req.query;
-      const body = {
-        filter: week ? { property: "Tuần", rich_text: { equals: week } } : undefined,
-      };
-      const r = await fetch(`https://api.notion.com/v1/databases/${DB_WEEKLY}/query`, {
-        method: "POST", headers, body: JSON.stringify(body),
+      const r = await fetch(`https://api.notion.com/v1/databases/${DB_TASKS}/query`, {
+        method: "POST", headers,
+        body: JSON.stringify({
+          filter: { and: [
+            { property: "Tuần", rich_text: { equals: week } },
+            { property: "Kết quả", rich_text: { is_not_empty: true } },
+          ]},
+        }),
       });
       const data = await r.json();
       const reports = {};
       (data.results || []).forEach(p => {
-        const uid = p.properties["Username"]?.rich_text?.[0]?.plain_text || "";
+        const uid = txt(p.properties["Assignee"]);
         if (!uid) return;
         reports[uid] = {
           notionId: p.id,
-          week: txt(p.properties["Tuần"]),
-          username: uid,
-          completion: txt(p.properties["Kết quả hoàn thành"]),
-          reason: txt(p.properties["Lý do chậm tiến độ"]),
-          plan: txt(p.properties["Kế hoạch tuần sau"]),
-          status: p.properties["Trạng thái"]?.select?.name || "Chưa nộp",
+          completion: txt(p.properties["Kết quả"]),
+          reason: "",
+          plan: txt(p.properties["Đề xuất"]),
+          status: p.properties["Status"]?.select?.name || "Hoàn thành",
         };
       });
       return res.status(200).json(reports);
     }
 
     if (req.method === "POST") {
-      // Create or update: check if exists first
       const { week, username, completion, reason, plan, status } = req.body;
       // Check existing
-      const qr = await fetch(`https://api.notion.com/v1/databases/${DB_WEEKLY}/query`, {
+      const qr = await fetch(`https://api.notion.com/v1/databases/${DB_TASKS}/query`, {
         method: "POST", headers,
         body: JSON.stringify({
           filter: { and: [
             { property: "Tuần", rich_text: { equals: week } },
-            { property: "Username", rich_text: { equals: username } },
+            { property: "Assignee", rich_text: { equals: username } },
+            { property: "Kết quả", rich_text: { is_not_empty: true } },
           ]},
         }),
       });
@@ -60,32 +61,25 @@ export default async function handler(req, res) {
       const existing = qdata.results?.[0];
 
       const properties = {
+        "Nội dung": { title: [{ text: { content: `${username} - ${week}` } }] },
         "Tuần": setTxt(week),
-        "Username": setTxt(username),
-        "Kết quả hoàn thành": setTxt(completion),
-        "Lý do chậm tiến độ": setTxt(reason),
-        "Kế hoạch tuần sau": setTxt(plan),
-        "Trạng thái": { select: { name: status || "Hoàn thành" } },
-        "Tên": { title: [{ text: { content: `${username} - ${week}` } }] },
+        "Assignee": setTxt(username),
+        "Kết quả": setTxt(completion),
+        "Đề xuất": setTxt(plan),
+        "Status": { select: { name: status || "Hoàn thành" } },
       };
 
-      let pageId;
       if (existing) {
-        // Update
         await fetch(`https://api.notion.com/v1/pages/${existing.id}`, {
           method: "PATCH", headers, body: JSON.stringify({ properties }),
         });
-        pageId = existing.id;
       } else {
-        // Create
-        const cr = await fetch("https://api.notion.com/v1/pages", {
+        await fetch("https://api.notion.com/v1/pages", {
           method: "POST", headers,
-          body: JSON.stringify({ parent: { database_id: DB_WEEKLY }, properties }),
+          body: JSON.stringify({ parent: { database_id: DB_TASKS }, properties }),
         });
-        const cdata = await cr.json();
-        pageId = cdata.id;
       }
-      return res.status(200).json({ ok: true, notionId: pageId });
+      return res.status(200).json({ ok: true });
     }
 
     return res.status(405).json({ error: "Method not allowed" });
